@@ -1,0 +1,15 @@
+{
+  "name": "IGCSEHistoryBackend",
+  "version": "1.0.0",
+  "description": "A concise backend database for IGCSE History Past Paper Questions",
+  "main": "index.js",
+  "author": "Markus Zhang",
+  "license": "MIT",
+  "dependencies": {
+    "klaw": "^3.0.0",
+    "lodash": "^4.17.15",
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^1.1.8",
+    "pdfmake": "^0.1.62"
+  }
+}
