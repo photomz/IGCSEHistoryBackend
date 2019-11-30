@@ -6,43 +6,40 @@ const { exec } = require("child_process");
 const getText = regexObject => Array.from(regexObject, m => m[0]);
 
 const getSectioniseRegex = (paperType, year) => {
+  let separator, cleaner;
   switch (paperType) {
-    case "ms":
-      /*
+  case "ms":
+    /*
        * \d{0,2}.*\([a-c]\) Match question numbers and letters with arbitrary whitespace, eg: 1.   (a)
        * (?!(?:recall|Page \d+ Mark Scheme|\([a-c]\))) Assert matches cannot have recall|Page {num}Mark Scheme|([a-c])
        * (?:.|[\n\r]) Otherwise regex can have arbitrary characters and line breaks
        * (?: ... )* Apply for all text
        */
-      const removeFooter = /(?:\nPage \d+ Mark Scheme:? (?:(?!© (?:University of )?(?:UCLES|Cambridge International Examinations) 20\d{2})(?:.|[\n\r]))+© (?:University of )?(?:UCLES|Cambridge International Examinations) 20\d{2}|\n0470\/1[1-3](?:(?!Marks)(?:.|[\n\r]))+Marks)/g;
-      // Apply to each regex result from first separator
-      const separator = /\d{0,2}[ \t]*\([a-c]\)(?:(?!(?:recall|\d{0,2}[ \t]*\([a-c]\)))(?:.|[\n\r]))*/g;
-      return [separator, removeFooter];
-    case "qp":
-      const removeCopyrightFooter = /(?:Copyright\s+Acknowledgements|Permission\s+to\s+reproduce)(?:.|[\n\r])*/g;
-      /*
+    cleaner = /(?:\nPage \d+ Mark Scheme:? (?:(?!© (?:University of )?(?:UCLES|Cambridge International Examinations) 20\d{2})(?:.|[\n\r]))+© (?:University of )?(?:UCLES|Cambridge International Examinations) 20\d{2}|\n0470\/1[1-3](?:(?!Marks)(?:.|[\n\r]))+Marks)/g;
+    // Apply to each regex result from first separator
+    separator = /\d{0,2}[ \t]*\([a-c]\)(?:(?!(?:recall|\d{0,2}[ \t]*\([a-c]\)))(?:.|[\n\r]))*/g;
+    break;
+  case "qp":
+    cleaner = /(?:Copyright\s+Acknowledgements|Permission\s+to\s+reproduce)(?:.|[\n\r])*/g;
+    /*
        * \d{0,2}[ \t]*Study the : Match question instructions and extract introduction.
        * (?!(?:\d{0,2}[ \t]*Study the |0470|(?:\n[ \t]*){2})) Assert matches cannot contain new question set | footer for page break | double line break
        * (?:.|[\n\r]) Otherwise regex can have arbitrary characters and line breaks
        * (?: ... )* Apply for all text
        */
-      if (year < 2015)
-        return [
-          /\n\d{1,2}[ \t]*(?:Study the |Look at the|Read the extract)(?:(?!(?:\n\d{1,2}[ \t]*(?:Study the |Look at the|Read the extract)|0470|(?:\n[ \t]*){2}))(?:.|[\n\r]))*/g,
-          removeCopyrightFooter
-        ];
-      else if (year >= 2015 && year <= 2019)
-        return [
-          /\n\d{1,2} (?:(?!(?:\n\d{1,2} |(?:\n[ \t]*){2}))(?:.|[\n\r]))*/g,
-          removeCopyrightFooter
-        ];
-      else
-        throw new Error(
-          `Year ${year} not within valid year range of 2010-2019`
-        );
-    default:
-      throw new Error("Paper Type is not qp or ms.");
+    if (year < 2015)
+      separator = /\n\d{1,2}[ \t]*(?:Study the |Look at the|Read the extract)(?:(?!(?:\n\d{1,2}[ \t]*(?:Study the |Look at the|Read the extract)|0470|(?:\n[ \t]*){2}))(?:.|[\n\r]))*/g;
+    else if (year >= 2015 && year <= 2019)
+      separator = /\n\d{1,2} (?:(?!(?:\n\d{1,2} |(?:\n[ \t]*){2}))(?:.|[\n\r]))*/g;
+    else
+      throw new Error(
+        `Year ${year} not within valid year range of 2010-2019`
+      );
+    break;
+  default:
+    throw new Error("Paper Type is not qp or ms.");
   }
+  return [separator, cleaner];
 };
 
 const removeEmptyQuestionContent = question =>
@@ -79,20 +76,18 @@ const fixDuplicatedMarkSchemes = captures =>
 const sectioniseText = (text, paperType, year = 2019) => {
   const [separatorRegex, cleanerRegex] = getSectioniseRegex(paperType, year);
   const captures = getText(text.matchAll(separatorRegex));
+  const cleanedCaptures = captures
+    .map(text => text.replace(cleanerRegex, " ").trim())
+    .filter(removeEmptyQuestionContent);
   switch (paperType) {
-    case "ms":
-      const cleanedCaptures = captures
-        .map(answer => answer.replace(cleanerRegex, " ").trim())
-        .filter(removeEmptyQuestionContent);
-      // After 2017, (c) mark schemes spanning multiple page have duplicate questions number & letters
-      if (year >= 2017) return fixDuplicatedMarkSchemes(cleanedCaptures);
-      else return cleanedCaptures;
-    case "qp":
-      return captures
-        .map(question => question.replace(cleanerRegex, " ").trim())
-        .filter(removeEmptyQuestionContent);
-    default:
-      throw new Error("Paper Type is not qp or ms.");
+  case "ms":
+    // After 2017, (c) mark schemes spanning multiple page have duplicate questions number & letters
+    if (year >= 2017) return fixDuplicatedMarkSchemes(cleanedCaptures);
+    else return cleanedCaptures;
+  case "qp":
+    return cleanedCaptures;
+  default:
+    throw new Error("Paper Type is not qp or ms.");
   }
 };
 

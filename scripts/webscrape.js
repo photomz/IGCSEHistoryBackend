@@ -42,9 +42,9 @@ shortYears.forEach(year => {
         let url;
         if (yearExceptions[season + year]) {
           // is directory structure of newer years
-          url = `${HOSTNAME}/cie/IGCSE/History-${SUBJECT}/${yearPath}/${SUBJECT}_${seasonPath}_${paperType}_1${timeZone}.pdf`;
+          url = `${HOSTNAME}/cie/IGCSE/History-${SUBJECT}/${yearPath}/${SUBJECT}_${seasonPath}_${paperType}_${PAPER}${timeZone}.pdf`;
         } else {
-          url = `${HOSTNAME}/cie/IGCSE/History-${SUBJECT}/${yearPath}/${yearPath}%20${longSeasons[season]}/${SUBJECT}_${seasonPath}_${paperType}_1${timeZone}.pdf`;
+          url = `${HOSTNAME}/cie/IGCSE/History-${SUBJECT}/${yearPath}/${yearPath}%20${longSeasons[season]}/${SUBJECT}_${seasonPath}_${paperType}_${PAPER}${timeZone}.pdf`;
         }
 
         const saveUrl = `./assets/pdf/${paperType}/${year}/${season}`;
