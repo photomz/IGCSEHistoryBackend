@@ -1,4 +1,5 @@
 node_modules
 assets/pdf/**/*
+assets/json/**/*
 .DS_Store
 .vscode

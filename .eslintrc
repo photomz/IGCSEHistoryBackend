@@ -1,22 +1,18 @@
+  
 {
   "env": {
+    "commonjs": true,
     "es6": true,
     "node": true
   },
   "plugins": ["prettier"],
-  "parser": "babel-eslint",
-  "extends": ["prettier", "eslint:recommended"],
+  "extends": ["eslint:recommended", "prettier", "airbnb-base"],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
   "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module"
+    "ecmaVersion": 2018
   },
-  "rules": {
-    "indent": ["error", 2],
-    "linebreak-style": ["error", "unix"],
-    "quotes": ["error", "double"]
-  }
+  "rules": {}
 }
