@@ -38,7 +38,7 @@ const getSubsectioniseRegex = (paperType, year, season, timeZone, questionIndex)
       throw new Error('Paper Type is not qp or ms.');
   }
   // Replace keywords or whitespaces with single space or leading or trailing numbers
-  const cleaner = /\s{2,}|OR|e\.g\.|\n+|\r+|\t+|[0-9]-\s*$|^\s*[0-9]-|^\s*[0-9]{1,2}|[0-9]{1,2}\s*$/g;
+  const cleaner = /\s{2,}|OR|e\.g\.|\n+|\r+|\t+|[0-9]-\s*$|^\s*[0-9]-|^\s*[0-9]{1,2}.+(?!$)|(?!^).+[0-9]{1,2}\s*$/g;
 
   return [separator, cleaner];
 };

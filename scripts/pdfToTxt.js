@@ -22,11 +22,10 @@ klaw(rootDir, { filter })
       subfolderNames.length === 4 &&
       subfolderNames[subfolderNames.length - 1].includes(".pdf")
     ) {
-      const textWritePath =
-        path
-          .split(".pdf")
-          .slice(0)
-          .join("") + ".txt";
+      const textWritePath = `${path
+        .split(".pdf")
+        .slice(0)
+        .join("")}.txt`;
       new Promise((res, rej) =>
         fs.readFile(path, (err, data) => (err ? rej(err) : res(data)))
       )

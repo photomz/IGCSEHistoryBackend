@@ -40,7 +40,7 @@ const userGetText = async () => {
       console.log(level);
     });
   } else if (paperType === 'qp') {
-    console.log(`${rootDir}/${paperType}/${year}/${season}/${timeZone}/${question}.json`);
+    // console.log(`${rootDir}/${paperType}/${year}/${season}/${timeZone}/${question}.json`);
     fs.readFile(`${rootDir}/${paperType}/${year}/${season}/${timeZone}/${question}.json`, (err, data) => {
       if (err) console.error(`Error opening JSON file: ${err}`);
       const {
@@ -52,5 +52,6 @@ const userGetText = async () => {
   }
   stdin.end();
 };
+
 
 userGetText();
