@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const fs = require('fs');
 const sysPath = require('path');
 const klaw = require('klaw');
@@ -48,11 +49,12 @@ const sectioniseText = (text, paperType, year = 2019, season = 'w', timeZone = 1
   let captures;
   const [separatorRegex, cleanerRegex] = regexes;
 
+  // eslint-disable-next-line no-useless-catch
   try {
     captures = [...text.matchAll(separatorRegex)][0].slice(1);
   } catch (e) {
-    console.log(captures);
-    console.log(paperType + year + season + timeZone + qIndex);
+    // console.log(captures);
+    // console.log(paperType + year + season + timeZone + qIndex);
     throw e;
   }
   // console.log(`Captures at sectioniseText: ${captures}`)
@@ -66,16 +68,16 @@ const removeQuotes = (exemplar) => exemplar.slice(1, exemplar.length - 1);
 const sectioniseExemplars = (text) => {
   if (text === null) return text;
   let exemplars;
-  try {
-    const regexWithoutEndQuote = /(?:[‘']|’[A-Z])(?:(?!\.[’'])(?:\w|[ ,–\-'‘’"“”.!?/]))+\.?[’']?/g;
-    // Match by quotes and then remove quotes
-    exemplars = text.match(regexWithoutEndQuote);
-    if (!exemplars) {
-      const regexWithoutStartQuote = /(?:[‘']|’[A-Z])?(?:(?!\.[’'])(?:\w|[ ,–\-'‘’"“”.!?/]))+\.?[’']/g;
-      exemplars = text.match(regexWithoutStartQuote);
-    }
-    return exemplars.map(removeQuotes);
-  } catch (e) { console.log(`${text} ${exemplars}`); throw e; }
+  // try {
+  const regexWithoutEndQuote = /(?:[‘']|’[A-Z])(?:(?!\.[’'])(?:\w|[ ,–\-'‘’"“”.!?/]))+\.?[’']?/g;
+  // Match by quotes and then remove quotes
+  exemplars = text.match(regexWithoutEndQuote);
+  if (!exemplars) {
+    const regexWithoutStartQuote = /(?:[‘']|’[A-Z])?(?:(?!\.[’'])(?:\w|[ ,–\-'‘’"“”.!?/]))+\.?[’']/g;
+    exemplars = text.match(regexWithoutStartQuote);
+  }
+  return exemplars.map(removeQuotes);
+  // } catch (e) { console.log(`${text} ${exemplars}`); throw e; }
 };
 
 const sectionsToJSON = (sections, paperType, year) => {
@@ -123,14 +125,14 @@ const saveJSONSubsection = (json, subfolderNames, writeDir) => new Promise((reso
   const filename = paperType === 'ms' ? (Math.floor(questionNumber / 3) + 1) + json.letter : questionNumber;
   fs.writeFile(`${writeDir}/${filename}.json`, JSON.stringify(json), (err) => {
     if (err) console.error(err);
-    console.log(`To ${writeDir.replace(rootDir, '')}/${filename}.json`);
+    // console.log(`To ${writeDir.replace(rootDir, '')}/${filename}.json`);
   });
 });
 
 const callback = (path, subfolderNames, writeDir) => {
   fs.readFile(path, 'utf8', (err, text) => {
     if (err) console.error(err);
-    console.log(`From ${subfolderNames}`);
+    // console.log(`From ${subfolderNames}`);
     const [paperType, year, season, timeZone, questionIndex] = subfolderNames;
     const sections = sectioniseText(text, paperType, 2000 + Number(year), season, timeZone, questionIndex.replace('.txt', ''));
     const jsonSections = sectionsToJSON(sections, paperType, 2000 + Number(year));
@@ -164,5 +166,5 @@ klaw(rootDir, { filter })
       callback(path, subfolderNames, textWriteDir);
     }
   })
-  .on('error', (err, { path }) => console.error(`At ${path}: ${err}`))
-  .on('end', () => console.log('Klaw done'));
+  .on('error', (err, { path }) => console.error(`At ${path}: ${err}`));
+// .on('end', () => console.log('Klaw done'));

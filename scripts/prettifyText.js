@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
 const klaw = require('klaw');
@@ -14,7 +15,8 @@ const getSectioniseRegex = (paperType, year) => {
       cleaner = /(?:\nPage \d+ Mark Scheme:? (?:(?!© (?:University of )?(?:UCLES|Cambridge International Examinations) 20\d{2})(?:.|[\n\r]))+© (?:University of )?(?:UCLES|Cambridge International Examinations) 20\d{2}|\n0470\/1[1-3](?:(?!Marks?(?! Scheme))(?:.|[\n\r]))+Marks?)/g;
       /*
     * \d{0,2}.*\([a-c]\) Match question numbers and letters with arbitrary whitespace, eg: 1.   (a)
-    * (?!(?:recall\s*,|Page \d+ Mark Scheme|\([a-c]\))) Assert matches cannot have recall,|Page {num}Mark Scheme|([a-c])
+    * (?!(?:recall\s*,|Page \d+ Mark Scheme|\([a-c]\)))
+    * Assert matches cannot have recall,|Page {num}Mark Scheme|([a-c])
     * (?:.|[\n\r]) Otherwise regex can have arbitrary characters and line breaks
     * (?: ... )* Apply for all text
     */
@@ -24,7 +26,8 @@ const getSectioniseRegex = (paperType, year) => {
       cleaner = /(?:Copyright\s+Acknowledgements|Permission\s+to\s+reproduce)(?:.|[\n\r])*/g;
       /*
        * \d{0,2}[ \t]*Study the : Match question instructions and extract introduction.
-       * (?!(?:\d{0,2}[ \t]*Study the |0470|(?:\n[ \t]*){2})) Assert matches cannot contain new question set | footer for page break | double line break
+       * (?!(?:\d{0,2}[ \t]*Study the |0470|(?:\n[ \t]*){2}))
+       * Assert matches cannot contain new question set | footer for page break | double line break
        * (?:.|[\n\r]) Otherwise regex can have arbitrary characters and line breaks
        * (?: ... )* Apply for all text
        */
@@ -77,7 +80,7 @@ const sectioniseText = (text, paperType, year = 2019) => {
   const [separatorRegex, cleanerRegex] = getSectioniseRegex(paperType, year);
   const captures = getText(text.matchAll(separatorRegex));
   const cleanedCaptures = captures
-    .map((text) => text.replace(cleanerRegex, ' ').trim())
+    .map((txt) => txt.replace(cleanerRegex, ' ').trim())
     .filter(removeEmptyQuestionContent);
   switch (paperType) {
     case 'ms':
@@ -91,20 +94,19 @@ const sectioniseText = (text, paperType, year = 2019) => {
   }
 };
 
-const callback = (path, [paperType, year], writeDir) => {
-  fs.readFile(path, 'utf8', (err, text) => {
+const callback = (filepath, [paperType, year], writeDir) => {
+  fs.readFile(filepath, 'utf8', (err, text) => {
     if (err) console.error(err);
-    console.log(path);
+    // console.log(path);
     const sectionised = sectioniseText(text, paperType, 2000 + Number(year));
     new Promise((resolve) => {
       exec(`mkdir -p ${writeDir}`, {}, () => resolve());
-    }).then(() =>
+    }).then(() => sectionised.forEach((section, questionNum) => {
       // Have all async save file ops run currently
-      sectionised.forEach((section, questionNum) => {
-        fs.writeFile(`${writeDir}/${questionNum + 1}.txt`, section, (err) => {
-          if (err) console.error(err);
-        });
-      }));
+      fs.writeFile(`${writeDir}/${questionNum + 1}.txt`, section, (e) => {
+        if (e) console.error(err);
+      });
+    }));
   });
 };
 
@@ -115,6 +117,7 @@ const filter = (item) => {
 
 const rootDir = path.join(__dirname, '../assets/pdf');
 klaw(rootDir, { filter })
+  // eslint-disable-next-line no-shadow
   .on('data', ({ path }) => {
     const subfolderNames = path
       .split(rootDir)
@@ -135,5 +138,6 @@ klaw(rootDir, { filter })
       callback(path, subfolderNames, textWriteDir);
     }
   })
-  .on('error', (err, { path }) => console.error(`At ${path}: ${err}`))
-  .on('end', () => console.log('Klaw done'));
+  // eslint-disable-next-line no-shadow
+  .on('error', (err, { path }) => console.error(`At ${path}: ${err}`));
+// .on('end', () => console.log('Klaw done'));

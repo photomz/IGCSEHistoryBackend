@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const _ = require('lodash');
 const fs = require('fs');
 const https = require('https');
@@ -31,6 +32,10 @@ const yearExceptions = {
   s19: '2019-May-June',
 };
 
+const mkdir = (dir) => new Promise((resolve) => {
+  exec(`mkdir -p ${dir}`, {}, () => resolve());
+});
+
 shortYears.forEach((year) => {
   shortSeasons.forEach((season) => {
     paperTypes.forEach((paperType) => {
@@ -50,15 +55,13 @@ shortYears.forEach((year) => {
         const saveUrl = `./assets/pdf/${paperType}/${year}/${season}`;
         const fileName = `${timeZone}.pdf`;
         const file = fs.createWriteStream(`${saveUrl}/${fileName}`);
-        new Promise((resolve) => {
-          exec(`mkdir -p ${saveUrl}`, {}, () => resolve());
-        }).then(() => {
+        mkdir(saveUrl).then(() => {
           https.get(url, (res) => {
             console.log(url);
             console.log(
               `${SUBJECT}_${seasonPath}_${paperType}_${timeZone} ${res.headers['content-type']}`,
             );
-            if (res.headers['content-type'] === 'application/pdf') {res.pipe(file);}
+            if (res.headers['content-type'] === 'application/pdf') res.pipe(file);
             else {
               // html file, 404 Page
               file.end();
