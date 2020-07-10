@@ -1,44 +1,49 @@
 /* eslint-disable no-console */
-const fs = require('fs');
-const path = require('path');
-const klaw = require('klaw');
-const pdf = require('pdf-parse');
+const fs = require("fs");
+const path = require("path");
+const klaw = require("klaw");
+const pdf = require("pdf-parse");
 
-const filter = (item) => {
+const filter = item => {
   const basename = path.basename(item);
-  return (basename === '.' || basename[0] !== '.') && basename;
+  return (basename === "." || basename[0] !== ".") && basename;
 };
 
-const rootDir = path.join(__dirname, '../assets/pdf');
+const rootDir = path.join(__dirname, "../assets/pdf");
 klaw(rootDir, { filter })
   // eslint-disable-next-line no-shadow
-  .on('data', ({ path }) => {
+  .on("data", ({ path }) => {
     const subfolderNames = path
       .split(rootDir)
       .slice(1)
-      .join('')
-      .split('/')
+      .join("")
+      .split("/")
       .slice(1);
     // console.log(subfolderNames);
     if (
-      subfolderNames.length === 4
-      && subfolderNames[subfolderNames.length - 1].includes('.pdf')
+      subfolderNames.length === 4 &&
+      subfolderNames[subfolderNames.length - 1].includes(".pdf")
     ) {
       const textWritePath = `${path
-        .split('.pdf')
+        .split(".pdf")
         .slice(0)
-        .join('')}.txt`;
-      new Promise((res, rej) => fs.readFile(path, (err, data) => (err ? rej(err) : res(data))))
-        .then((dataBuffer) => pdf(dataBuffer))
+        .join("")}.txt`;
+      new Promise((res, rej) =>
+        fs.readFile(path, (err, data) => (err ? rej(err) : res(data)))
+      )
+        .then(dataBuffer => pdf(dataBuffer))
         .then(({ text }) => {
           // console.log(text.slice(0, 1000));
-          fs.writeFile(textWritePath, text, (err) => {
+          fs.writeFile(textWritePath, text, err => {
             if (err) console.error(err);
           });
         })
-        .catch((err) => console.error(err));
+        .catch(err => {
+          console.log(subfolderNames);
+          console.error(err);
+        });
     }
   })
   // eslint-disable-next-line no-shadow
-  .on('error', (err, { path }) => console.error(`At ${path}: ${err}`));
+  .on("error", (err, { path }) => console.error(`At ${path}: ${err}`));
 // .on('end', () => console.log('done'));

@@ -8,9 +8,7 @@
   "dependencies": {
     "klaw": "^3.0.0",
     "lodash": "^4.17.15",
-    "pdf-parse": "^1.1.1",
-    "pdf2json": "^1.1.8",
-    "pdfmake": "^0.1.62"
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
